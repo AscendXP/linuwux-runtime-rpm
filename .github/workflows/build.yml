@@ -1,0 +1,57 @@
+name: Watch Upstream Version
+
+#off:
+#  schedule:
+ #   - cron: '0 0 * * *'
+#  workflow_dispatch:        # Allows running manually from GitHub UI
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Grants permission to commit the version file back to your repo
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Latest Upstream Version
+        id: upstream
+        run: |
+          # Try fetching the latest release tag from upstream API
+          LATEST_TAG=$(curl -s https://api.github.com/repos/xshaduwulfx/shaduwulf-linuwux-runtime/releases/latest | jq -r '.tag_name // empty')
+          
+          # Fallback: Use short commit SHA if no formal releases exist
+          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" == "null" ]; then
+            LATEST_TAG=$(curl -s https://api.github.com/repos/xshaduwulfx/shaduwulf-linuwux-runtime/commits/main | jq -r '.sha[0:7]')
+          fi
+
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          echo "upstream_version=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Compare with Saved Version
+        id: compare
+        run: |
+          SAVED_TAG=""
+          if [ -f ".upstream-version" ]; then
+            SAVED_TAG=$(cat .upstream-version)
+          fi
+
+          echo "Saved version: '${SAVED_TAG}'"
+          echo "Upstream version: '${LATEST_TAG}'"
+
+          if [ "$SAVED_TAG" != "$LATEST_TAG" ]; then
+            echo "CHANGED=true" >> $GITHUB_OUTPUT
+          else
+            echo "CHANGED=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Version File & Push
+        if: steps.compare.outputs.CHANGED == 'true'
+        run: |
+          echo "$LATEST_TAG" > .upstream-version
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .upstream-version
+          git commit -m "chore: update tracked upstream version to $LATEST_TAG"
+          git push
