@@ -1,0 +1,7 @@
+update_obs:
+  steps:
+    - trigger_services:
+        project: home:ascendxpss
+        package: linuwux-runtime
+  filters:
+    event: push
