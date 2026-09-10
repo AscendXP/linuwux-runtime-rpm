@@ -9,6 +9,7 @@ Source0:        https://github.com/brcly/linuwux-runtime/archive/refs/heads/main
 Source1:        linuwux
 ExclusiveArch:  x86_64
 BuildRequires:  unzip
+%global debug_package %{nil}
 
 %description
 A preloadable runtime library (liblinuwux_runtime.so) providing CPUID spoofing,
