@@ -1,9 +1,9 @@
 name: Watch Upstream Version
 
-#off:
-#  schedule:
- #   - cron: '0 0 * * *'
-#  workflow_dispatch:        # Allows running manually from GitHub UI
+on:
+ schedule:
+    - cron: '0 0 * * *'
+ workflow_dispatch:        # Allows running manually from GitHub UI
 
 jobs:
   check-version:
@@ -19,11 +19,11 @@ jobs:
         id: upstream
         run: |
           # Try fetching the latest release tag from upstream API
-          LATEST_TAG=$(curl -s https://api.github.com/repos/xshaduwulfx/shaduwulf-linuwux-runtime/releases/latest | jq -r '.tag_name // empty')
+          LATEST_TAG=$(curl -s https://api.github.com/repos/brcly/linuwux-runtime/releases/latest | jq -r '.tag_name // empty')
           
           # Fallback: Use short commit SHA if no formal releases exist
           if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" == "null" ]; then
-            LATEST_TAG=$(curl -s https://api.github.com/repos/xshaduwulfx/shaduwulf-linuwux-runtime/commits/main | jq -r '.sha[0:7]')
+            LATEST_TAG=$(curl -s https://api.github.com/repos/brcly/linuwux-runtime/commits/main | jq -r '.sha[0:7]')
           fi
 
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
