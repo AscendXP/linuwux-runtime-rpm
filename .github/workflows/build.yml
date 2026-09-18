@@ -18,17 +18,17 @@ jobs:
       - name: Get Latest Upstream Version
         id: upstream
         run: |
-          # Try fetching the latest release tag from upstream API
-          LATEST_TAG=$(curl -s https://api.github.com/repos/brcly/linuwux-runtime/releases/latest | jq -r '.tag_name // empty')
-          
-          # Fallback: Use short commit SHA if no formal releases exist
-          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" == "null" ]; then
-            LATEST_TAG=$(curl -s https://api.github.com/repos/brcly/linuwux-runtime/commits/main | jq -r '.sha[0:7]')
+          LATEST_TAG=$(curl -fsSL https://api.github.com/repos/brcly/linuwux-runtime/releases/latest | jq -r '.tag_name // empty')
+          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+            echo "ERROR: Could not determine upstream version."
+            echo "Stopping workflow."
+            exit 1
           fi
 
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-          echo "upstream_version=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "Upstream version: '$LATEST_TAG'"
 
+          echo "LATEST_TAG=$LATEST_TAG" >> "$GITHUB_ENV"
+          echo "upstream_version=$LATEST_TAG" >> "$GITHUB_OUTPUT"
       - name: Compare with Saved Version
         id: compare
         run: |
