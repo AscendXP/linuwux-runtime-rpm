@@ -3,12 +3,7 @@
     <param name="scm">git</param>
     <param name="url">https://github.com/brcly/linuwux-runtime.git</param>
     <param name="revision">main</param>
-    <param name="versionformat">%cd</param>
     <param name="changesgenerate">enable</param>
-  </service>
-
-  <service name="set_version">
-    <param name="basename">linuwux-runtime</param>
   </service>
 
   <service name="download_files"/>
