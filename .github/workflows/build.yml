@@ -46,12 +46,20 @@ jobs:
             echo "CHANGED=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update Version File & Push
+      - name: Update Spec Version & Push
         if: steps.compare.outputs.CHANGED == 'true'
         run: |
+          VERSION="${LATEST_TAG#v}"
+
+          echo "Updating RPM Version to: $VERSION"
+
+          sed -i -E "s/^Version:[[:space:]]+.*/Version: $VERSION/" *.spec
+
           echo "$LATEST_TAG" > .upstream-version
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .upstream-version
-          git commit -m "chore: update tracked upstream version to $LATEST_TAG"
+
+          git add .upstream-version *.spec
+          git commit -m "chore: update upstream version to $LATEST_TAG"
           git push
