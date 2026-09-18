@@ -1,3 +1,17 @@
 <services>
+  <service name="obs_scm">
+    <param name="scm">git</param>
+    <param name="url">https://github.com/brcly/linuwux-runtime.git</param>
+    <param name="revision">main</param>
+    <param name="versionformat">@PARENT_TAG@</param>
+    <param name="versionrewrite-pattern">v(.*)</param>
+    <param name="versionrewrite-replacement">\1</param>
+    <param name="changesgenerate">enable</param>
+  </service>
+
+  <service name="set_version">
+    <param name="basename">linuwux-runtime</param>
+  </service>
+
   <service name="download_files"/>
 </services>
