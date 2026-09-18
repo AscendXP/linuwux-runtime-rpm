@@ -1,5 +1,5 @@
 Name:           linuwux-runtime
-Version:        1
+Version: 26.09.16
 Release:        0
 Summary:        Standalone Linux preload runtime library for Wine and Proton
 License:        LGPL-2.1-or-later
