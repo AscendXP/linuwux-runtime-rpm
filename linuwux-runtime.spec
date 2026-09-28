@@ -11,13 +11,13 @@ ExclusiveArch:  x86_64
 %global debug_package %{nil}
 
 %description
-A preloadable runtime library (liblinuwux_runtime.so) providing CPUID spoofing,
+A preloadable runtime library (LinUwUx.so) providing CPUID spoofing,
 syscall redirection, and time interposition for Wine and Proton environments.
 
 
 %install
 install -d -m 0755 %{buildroot}%{_libdir}
-install -m 0755 %{SOURCE0} %{buildroot}%{_libdir}/liblinuwux_runtime.so
+install -m 0755 %{SOURCE0} %{buildroot}%{_libdir}/LinUwUx.so
 install -d -m 0755 %{buildroot}%{_bindir}
 install -m 0755 %{SOURCE1} %{buildroot}%{_bindir}/linuwux
 
@@ -28,17 +28,17 @@ if [ -n "$SUDO_USER" ]; then
     USER_GROUP=$(id -gn "$SUDO_USER")
     if [ -d "$USER_HOME" ]; then
         mkdir -p "$USER_HOME/.local/lib"
-        cp --reflink=auto -f %{_libdir}/liblinuwux_runtime.so "$USER_HOME/.local/lib/liblinuwux_runtime.so"
-        chown -h "$SUDO_USER:$USER_GROUP" "$USER_HOME/.local/lib/liblinuwux_runtime.so"
+        cp --reflink=auto -f %{_libdir}/LinUwUx.so "$USER_HOME/.local/lib/LinUwUx.so"
+        chown -h "$SUDO_USER:$USER_GROUP" "$USER_HOME/.local/lib/LinUwUx.so"
         chown -R "$SUDO_USER:$USER_GROUP" "$USER_HOME/.local/lib"
         chmod 0755 "$USER_HOME/.local/lib"
-        chmod 0755 "$USER_HOME/.local/lib/liblinuwux_runtime.so"
+        chmod 0755 "$USER_HOME/.local/lib/LinUwUx.so"
     fi
 fi
 %postun
 if [ -n "$SUDO_USER" ]; then
     USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
-    TARGET_LINK="$USER_HOME/.local/lib/liblinuwux_runtime.so"
+    TARGET_LINK="$USER_HOME/.local/lib/LinUwUx.so"
     if [ -f "$TARGET_LINK" ] || [ -L "$TARGET_LINK" ]; then
         rm -f "$TARGET_LINK"
     fi
@@ -46,5 +46,5 @@ if [ -n "$SUDO_USER" ]; then
 fi
 
 %files
-%{_libdir}/liblinuwux_runtime.so
+%{_libdir}/LinUwUx.so
 %{_bindir}/linuwux
