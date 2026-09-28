@@ -20,9 +20,6 @@ Instead of applying LinUwUx modifications directly to Wine and Proton, this proj
 
 The goal is to decouple the LinUwUx runtime behavior from a particular Wine or Proton source tree and make it possible to use and develop the implementation independently.
 
-> [!IMPORTANT]
-> This project is experimental and under active development.
-
 ## Installation
 
 LinUwUx Runtime is distributed as an RPM package across distinct repositories for **openSUSE** and **Fedora**.
@@ -54,7 +51,7 @@ The Fedora package is available from the [AscendXP COPR repository](https://copr
 The package installs the runtime library to:
 
 ```text
-/usr/lib64/liblinuwux_runtime.so
+/usr/lib64/LinUwUx.so
 ```
 
 After installation, use the `linuwux` launcher to start Wine, Proton, Steam, Heroic, Lutris, or other supported applications.
