@@ -1,3 +1,44 @@
 #!/bin/sh
-export LD_PRELOAD=/usr/lib64/liblinuwux_runtime.so${LD_PRELOAD:+:$LD_PRELOAD}
+set -eu
+set -f
+
+lib="$HOME/.local/share/linuwux/LinUwUx.so"
+
+[ -r "$lib" ] || exit 1
+
+case "$lib" in
+    *:*)
+        exit 1
+        ;;
+esac
+
+if [ "$#" -eq 0 ]; then
+    exit 1
+fi
+
+preload="${LD_PRELOAD-}"
+command_name="${1##*/}"
+filtered=
+old_ifs=$IFS
+IFS=:
+
+for entry in $preload; do
+    [ -n "$entry" ] || continue
+
+    case "$entry" in
+        "$lib") continue ;;
+    esac
+
+    if [ "$command_name" = gamescope ]; then
+        case "$entry" in
+            *gameoverlayrenderer.so*) continue ;;
+        esac
+    fi
+
+    filtered="${filtered:+$filtered:}$entry"
+done
+
+IFS=$old_ifs
+
+export LD_PRELOAD="$lib${filtered:+:$filtered}"
 exec "$@"
