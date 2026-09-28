@@ -2,7 +2,7 @@
 set -eu
 set -f
 
-lib="$HOME/.local/share/linuwux/LinUwUx.so"
+lib="/usr/lib64/LinUwUx.so"
 
 [ -r "$lib" ] || exit 1
 
