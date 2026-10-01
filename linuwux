@@ -3,18 +3,52 @@ set -eu
 set -f
 
 lib="/usr/lib64/LinUwUx.so"
+service="cpuid-fault-emulation.service"
+polkit_rule="/usr/share/polkit-1/rules.d/10-cpuid-fault-emulation.rules"
 
-[ -r "$lib" ] || exit 1
+if [ ! -r "$lib" ]; then
+    echo "linuwux: library not found: $lib" >&2
+    echo "  Reinstall LinUwUx runtime" >&2
+    exit 1
+fi
 
 case "$lib" in
     *:*)
+        echo "linuwux: library path cannot contain ':' when used in LD_PRELOAD" >&2
         exit 1
         ;;
 esac
 
 if [ "$#" -eq 0 ]; then
+    echo "linuwux: no command given -- use it as a launch option:" >&2
+    echo "  linuwux %command%" >&2
     exit 1
 fi
+
+cleanup_service=0
+
+if [ -f "$polkit_rule" ]; then
+    current_user="$(id -un)"
+
+    if id -nG "$current_user" | grep -qw wheel; then
+        if systemctl start "$service" 2>/dev/null; then
+            cleanup_service=1
+        fi
+    else
+        echo "linuwux: cpuid-fault-emulation requires your user to be in the wheel group."
+        echo "linuwux: add yourself with: sudo usermod -aG wheel $current_user"
+        echo "linuwux: log out and back in after adding the group."
+    fi
+fi
+
+cleanup()
+{
+    if [ "$cleanup_service" -eq 1 ]; then
+        systemctl stop "$service" 2>/dev/null || true
+    fi
+}
+
+trap cleanup EXIT
 
 preload="${LD_PRELOAD-}"
 command_name="${1##*/}"
@@ -26,12 +60,16 @@ for entry in $preload; do
     [ -n "$entry" ] || continue
 
     case "$entry" in
-        "$lib") continue ;;
+        "$lib")
+            continue
+            ;;
     esac
 
     if [ "$command_name" = gamescope ]; then
         case "$entry" in
-            *gameoverlayrenderer.so*) continue ;;
+            *gameoverlayrenderer.so*)
+                continue
+                ;;
         esac
     fi
 
@@ -41,4 +79,8 @@ done
 IFS=$old_ifs
 
 export LD_PRELOAD="$lib${filtered:+:$filtered}"
-exec "$@"
+
+"$@"
+status=$?
+
+exit "$status"
