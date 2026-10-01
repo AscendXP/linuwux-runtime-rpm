@@ -30,10 +30,9 @@ Add the OBS repository and install via `zypper`:
 
 ```sh
 sudo zypper addrepo https://download.opensuse.org/repositories/home:ascendxpss/openSUSE_Tumbleweed/home:ascendxpss.repo
-
 sudo zypper refresh
-
 sudo zypper install linuwux-runtime
+sudo usermod -aG wheel "$USER" # Integrate Polkit with AscendXP's cpuid-fault-emulation project and linuwux-runtime
 ```
 
 ### Fedora
@@ -42,8 +41,8 @@ Enable the COPR repository and install via `dnf`:
 
 ```sh
 sudo dnf copr enable ascendxps/AscendXP
-
 sudo dnf install linuwux-runtime
+sudo usermod -aG wheel "$USER" # Integrate Polkit with AscendXP's cpuid-fault-emulation project and linuwux-runtime
 ```
 
 The Fedora package is available from the [AscendXP COPR repository](https://copr.fedorainfracloud.org/coprs/ascendxps/AscendXP/).
