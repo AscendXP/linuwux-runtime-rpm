@@ -20,20 +20,67 @@ case "$lib" in
 esac
 
 if [ "$#" -eq 0 ]; then
-    echo "linuwux: no command given -- use it as a launch option:" >&2
-    echo "  linuwux %command%" >&2
-    exit 1
-fi
+    echo "linuwux: no command given -- use it as a launch option:"
+    echo "  linuwux %command%"
 
+    cpu_flags="$(grep -m1 '^flags' /proc/cpuinfo || true)"
+
+    if printf '%s\n' "$cpu_flags" | grep -qw 'umip'; then
+        echo "linuwux: ✗ UMIP enabled"
+        exit 1
+    else
+        echo "linuwux: ✓ UMIP disabled"
+    fi
+
+    current_user="$(id -un)"
+
+    if id -nG "$current_user" | grep -qw 'wheel'; then
+        echo "linuwux: ✓ User is in wheel group"
+    else
+        echo "linuwux: ✗ User is not in wheel group"
+        echo "linuwux: add yourself with: sudo usermod -aG wheel $current_user"
+        exit 1
+    fi
+
+    exit 0
+fi
 cleanup_service=0
+
+# Multi-process LinUwUx client tracking Credit
+# Credit: https://github.com/dnmodder/cpuid-fault-emulation
+
+runtime_dir="${XDG_RUNTIME_DIR:-/tmp}/linuwux-clients"
+client_pid="$$"
+client_file="$runtime_dir/$client_pid"
+lock_file="$runtime_dir/.lock"
 
 if [ -f "$polkit_rule" ]; then
     current_user="$(id -un)"
 
     if id -nG "$current_user" | grep -qw wheel; then
-        if systemctl start "$service" 2>/dev/null; then
-            cleanup_service=1
-        fi
+
+        mkdir -p "$runtime_dir"
+
+        (
+            flock -x 200
+
+            touch "$client_file"
+
+            if ! systemctl is-active --quiet "$service" 2>/dev/null; then
+                if ! systemctl start "$service"; then
+                    rm -f "$client_file"
+                    exit 1
+                fi
+            fi
+
+        ) 200>"$lock_file" || {
+            echo "linuwux: failed to start $service" >&2
+            rm -f "$client_file"
+            exit 1
+        }
+
+        cleanup_service=1
+
     else
         echo "linuwux: cpuid-fault-emulation requires your user to be in the wheel group."
         echo "linuwux: add yourself with: sudo usermod -aG wheel $current_user"
@@ -44,11 +91,43 @@ fi
 cleanup()
 {
     if [ "$cleanup_service" -eq 1 ]; then
-        systemctl stop "$service" 2>/dev/null || true
+        (
+            set +f
+
+            flock -x 200
+
+            rm -f "$client_file"
+
+            active_clients=0
+
+            for client in "$runtime_dir"/*; do
+                [ -e "$client" ] || continue
+
+                other_pid="${client##*/}"
+
+                case "$other_pid" in
+                    ""|*[!0-9]*)
+                        rm -f "$client"
+                        continue
+                        ;;
+                esac
+
+                if kill -0 "$other_pid" 2>/dev/null; then
+                    active_clients=$((active_clients + 1))
+                else
+                    rm -f "$client"
+                fi
+            done
+
+            if [ "$active_clients" -eq 0 ]; then
+                systemctl stop "$service" 2>/dev/null || true
+            fi
+
+        ) 200>"$lock_file"
     fi
 }
 
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 preload="${LD_PRELOAD-}"
 command_name="${1##*/}"
