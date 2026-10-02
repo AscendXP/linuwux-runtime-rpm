@@ -6,8 +6,6 @@ Standalone Linux runtime for Wine & Proton.
   <a href="#installation">Installation</a>
   ·
   <a href="#usage">Usage</a>
-  ·
-  <a href="#faq">FAQ</a>
 </p>
 
 ---
