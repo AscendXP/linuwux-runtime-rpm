@@ -51,7 +51,9 @@ The package installs the runtime library to:
 /usr/lib64/LinUwUx.so
 ```
 
-After installation, use the `linuwux` launcher to start Wine, Proton, Steam, Heroic, Lutris, or other supported applications.
+
+After installation, use the `linuwux` launcher. **For systems without native CPUID faulting, it is recommended to pair LinUwUx with my [**cpuid-fault-emulation-kmod**](https://github.com/AscendXP/cpuid-fault-emulation-kmod) or [**cpuid-fault-emulation-kmp**](https://software.opensuse.org/package/cpuid-fault-emulation) projects.** The launcher dynamically manages `cpuid-fault-emulation.service`, starting it when a LinUwUx application needs it and stopping it when no LinUwUx clients remain active.
+
 
 ## Usage
 
